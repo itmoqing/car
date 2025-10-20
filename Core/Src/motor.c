@@ -65,18 +65,18 @@ void Set_Single_Motor(int motor_num, int pwm_value)
             return; // 无效的电机编号
     }
     
-    // 控制电机方向和速度
+    // 控制电机方向和速度 - 修正后的逻辑
     if(pwm_value > 0) 
     {
-        // 正转
+        // 正转 - 使用pwm_value的绝对值
         __HAL_TIM_SET_COMPARE(pwm_tim, pwm_channel, pwm_value);
         HAL_GPIO_WritePin(dir_port, dir1_pin, GPIO_PIN_SET);
         HAL_GPIO_WritePin(dir_port, dir2_pin, GPIO_PIN_RESET);
     } 
     else if(pwm_value < 0) 
     {
-        // 反转
-        __HAL_TIM_SET_COMPARE(pwm_tim, pwm_channel, -pwm_value);
+        // 反转 - 使用pwm_value的绝对值
+        __HAL_TIM_SET_COMPARE(pwm_tim, pwm_channel, -pwm_value);  // 注意这里的负号
         HAL_GPIO_WritePin(dir_port, dir1_pin, GPIO_PIN_RESET);
         HAL_GPIO_WritePin(dir_port, dir2_pin, GPIO_PIN_SET);
     } 

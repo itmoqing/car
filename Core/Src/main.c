@@ -122,26 +122,25 @@ int main(void)
   HAL_UART_Receive_IT(&huart1, (uint8_t*)&cmd, sizeof(cmd));
   
   HAL_Delay(1000);
-    
-  // 系统启动信息
-  printf("=== Smart Car System Started ===\r\n");
-  printf("Device: %s\r\n", DEVICE_ID);
-  printf("MQTT Ready via ESP8266\r\n");
-  printf("Waiting for commands...\r\n");
+  
 
+  float temp = 22;
+  int humi = 22;
+  char s[100];
+    
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
-  {
-      
-      
+  {     		
+    sprintf(s, DEVICE_ID"/sensor/light %.1f\n", temp);      
+	HAL_UART_Transmit(&huart1, (uint8_t*)s, strlen(s), 1000); 
+			
+  	HAL_Delay(1200);  
     // LED心跳指示
     HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
     
-    // 发送系统状态
-    //printf("System Status: Ready - Device: %s\r\n", DEVICE_ID);
     
     HAL_Delay(1000);
     /* USER CODE END WHILE */
@@ -195,33 +194,31 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 	if(huart == &huart1)
 	{
-        // 添加详细的调试信息
-       printf("Received byte: 0x%02X\r\n", cmd);
-        
-		if(cmd == 'g')
+      
+		if(cmd == 'e')
 		{
 			Car_Forward(SPEED);
-			printf("CMD: Forward\r\n");
+			
 		}
 		else if(cmd == 'b')
 		{
 			Car_Backward(SPEED);
-			printf("CMD: Backward\r\n");
+			
 		}
 		else if(cmd == 'l')
 		{
 			Car_TurnLeft(SPEED);
-			printf("CMD: Turn Left\r\n");
+			
 		}
 		else if(cmd == 'r')
 		{
 			Car_TurnRight(SPEED);
-			printf("CMD: Turn Right\r\n");
+			
 		}
-		else if(cmd == 's')
+		else if(cmd == 'c')
 		{
 			Car_Stop();
-			printf("CMD: Stop\r\n");
+			
 		}
 		else
 		{
@@ -231,7 +228,6 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 		HAL_UART_Receive_IT(&huart1, (uint8_t*)&cmd, sizeof(cmd));
 	}
 }
-
 /* USER CODE END 4 */
 
 /**

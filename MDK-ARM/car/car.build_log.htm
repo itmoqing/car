@@ -22,12 +22,19 @@ Dialog DLL:      TCM.DLL V1.56.6.0
  
 <h2>Project:</h2>
 D:\STM32C8T6\car\MDK-ARM\car.uvprojx
-Project File Date:  10/19/2025
+Project File Date:  10/20/2025
 
 <h2>Output:</h2>
 *** Using Compiler 'V5.06 update 7 (build 960)', folder: 'D:\Keil_v5\ARM\ARMCC\Bin'
 Build target 'car'
-"car\car.axf" - 0 Error(s), 0 Warning(s).
+compiling main.c...
+../Core/Src/main.c(128): warning:  #177-D: variable "humi"  was declared but never referenced
+    int humi = 22;
+../Core/Src/main.c: 1 warning, 0 errors
+linking...
+Program Size: Code=11336 RO-data=312 RW-data=24 ZI-data=1456  
+FromELF: creating hex file...
+"car\car.axf" - 0 Error(s), 1 Warning(s).
 
 <h2>Software Packages used:</h2>
 
@@ -51,7 +58,7 @@ Package Vendor: Keil
 
    * Component: ARM::CMSIS:CORE@6.1.0
       Include file:  CMSIS/Core/Include/tz_context.h
-Build Time Elapsed:  00:00:00
+Build Time Elapsed:  00:00:01
 </pre>
 </body>
 </html>

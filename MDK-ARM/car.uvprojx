@@ -400,6 +400,11 @@
               <FilePath>..\Core\Src\motor.c</FilePath>
             </File>
             <File>
+              <FileName>esp8266.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Core\Src\esp8266.c</FilePath>
+            </File>
+            <File>
               <FileName>main.c</FileName>
               <FileType>1</FileType>
               <FilePath>../Core/Src/main.c</FilePath>
