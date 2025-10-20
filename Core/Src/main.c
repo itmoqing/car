@@ -117,6 +117,8 @@ int main(void)
 
   // 电机初始化
   MOTOR_Init();
+  
+  
 	
   // 用中断的方式接收一个字节的数据
   HAL_UART_Receive_IT(&huart1, (uint8_t*)&cmd, sizeof(cmd));
@@ -125,7 +127,6 @@ int main(void)
   
 
   float temp = 22;
-  int humi = 22;
   char s[100];
     
   /* USER CODE END 2 */
@@ -194,7 +195,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 	if(huart == &huart1)
 	{
-      
+        
 		if(cmd == 'e')
 		{
 			Car_Forward(SPEED);
@@ -228,6 +229,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 		HAL_UART_Receive_IT(&huart1, (uint8_t*)&cmd, sizeof(cmd));
 	}
 }
+ 
 /* USER CODE END 4 */
 
 /**

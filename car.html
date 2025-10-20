@@ -6,79 +6,226 @@
     <title>智能小车控制</title>
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <style>
+        :root {
+            --primary-color: #4CAF50;
+            --primary-dark: #45a049;
+            --danger-color: #f44336;
+            --danger-dark: #da190b;
+            --light-bg: #f5f5f5;
+            --card-bg: white;
+            --success-bg: #d4edda;
+            --success-color: #155724;
+            --error-bg: #f8d7da;
+            --error-color: #721c24;
+            --border-radius: 10px;
+            --shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        * {
+            box-sizing: border-box;
+        }
+        
         body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 20px;
-            background-color: #f5f5f5;
+            background-color: var(--light-bg);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
+        
         .container {
-            max-width: 400px;
-            margin: 0 auto;
-            background: white;
+            width: 100%;
+            max-width: 500px;
+            background: var(--card-bg);
             padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
         }
+        
         h1 {
             text-align: center;
             color: #333;
+            margin-top: 0;
         }
+        
         .control-panel {
             text-align: center;
             margin: 30px 0;
         }
+        
         .direction-btn {
             width: 80px;
             height: 80px;
             margin: 5px;
             font-size: 20px;
             border: none;
-            border-radius: 10px;
-            background: #4CAF50;
+            border-radius: var(--border-radius);
+            background: var(--primary-color);
             color: white;
             cursor: pointer;
+            transition: all 0.2s;
+            touch-action: manipulation;
         }
-        .direction-btn:active {
-            background: #45a049;
+        
+        .direction-btn:active, .direction-btn.active {
+            background: var(--primary-dark);
+            transform: scale(0.95);
         }
+        
         .stop-btn {
             width: 120px;
             height: 50px;
             margin: 10px;
             font-size: 18px;
-            background: #f44336;
+            background: var(--danger-color);
             color: white;
             border: none;
             border-radius: 25px;
             cursor: pointer;
+            transition: all 0.2s;
+            touch-action: manipulation;
         }
+        
         .stop-btn:active {
-            background: #da190b;
+            background: var(--danger-dark);
+            transform: scale(0.95);
         }
+        
         .status-panel {
             margin: 20px 0;
             padding: 15px;
             background: #e8f5e8;
             border-radius: 8px;
         }
+        
         .status-item {
             margin: 10px 0;
             font-size: 16px;
+            display: flex;
+            justify-content: space-between;
         }
+        
         .connection-status {
             padding: 10px;
             border-radius: 5px;
             text-align: center;
             margin-bottom: 20px;
+            font-weight: bold;
         }
+        
         .connected {
-            background: #d4edda;
-            color: #155724;
+            background: var(--success-bg);
+            color: var(--success-color);
         }
+        
         .disconnected {
-            background: #f8d7da;
-            color: #721c24;
+            background: var(--error-bg);
+            color: var(--error-color);
+        }
+        
+        .keyboard-hint {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            
+            .container {
+                padding: 15px;
+            }
+            
+            .direction-btn {
+                width: 70px;
+                height: 70px;
+                font-size: 18px;
+            }
+            
+            .stop-btn {
+                width: 100px;
+                height: 45px;
+                font-size: 16px;
+            }
+            
+            .status-item {
+                font-size: 14px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+        }
+        
+        @media (max-width: 360px) {
+            .direction-btn {
+                width: 60px;
+                height: 60px;
+                font-size: 16px;
+            }
+            
+            .stop-btn {
+                width: 90px;
+                height: 40px;
+                font-size: 14px;
+            }
+        }
+        
+        /* 方向控制布局 */
+        .direction-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 10px;
+            max-width: 260px;
+            margin: 0 auto;
+        }
+        
+        .direction-grid .direction-btn {
+            width: 100%;
+            height: 100%;
+            min-height: 70px;
+        }
+        
+        .direction-grid .stop-btn {
+            grid-column: 1 / span 3;
+            width: 100%;
+            max-width: 200px;
+            margin: 0 auto;
+        }
+        
+        .direction-grid .btn-up {
+            grid-column: 2;
+            grid-row: 1;
+        }
+        
+        .direction-grid .btn-left {
+            grid-column: 1;
+            grid-row: 2;
+        }
+        
+        .direction-grid .btn-right {
+            grid-column: 3;
+            grid-row: 2;
+        }
+        
+        .direction-grid .btn-down {
+            grid-column: 2;
+            grid-row: 3;
+        }
+        
+        /* 触摸设备优化 */
+        @media (hover: none) and (pointer: coarse) {
+            .direction-btn, .stop-btn {
+                min-height: 44px; /* 苹果推荐的最小触摸目标尺寸 */
+            }
         }
     </style>
 </head>
@@ -91,29 +238,41 @@
         </div>
 
         <div class="status-panel">
-            <div class="status-item">设备ID: <span id="deviceIdDisplay">-</span></div>
-            <div class="status-item">连接状态: <span id="mqttStatus">断开</span></div>
-            <div class="status-item">当前速度: <span id="currentSpeed">0</span></div>
+            <div class="status-item">
+                <span>设备ID:</span>
+                <span id="deviceIdDisplay">-</span>
+            </div>
+            <div class="status-item">
+                <span>连接状态:</span>
+                <span id="mqttStatus">断开</span>
+            </div>
+            <div class="status-item">
+                <span>当前速度:</span>
+                <span id="currentSpeed">0</span>
+            </div>
         </div>
 
         <div class="control-panel">
-            <!-- 方向控制按钮 -->
-            <div>
-                <button class="direction-btn" data-cmd="e">前进</button>
-            </div>
-            <div>
-                <button class="direction-btn" data-cmd="l">左转</button>
+            <!-- 方向控制按钮 - 网格布局 -->
+            <div class="direction-grid">
+                <button class="direction-btn btn-up" data-cmd="e">前进</button>
+                <button class="direction-btn btn-left" data-cmd="l">左转</button>
                 <button class="stop-btn" data-cmd="c">停止</button>
-                <button class="direction-btn" data-cmd="r">右转</button>
+                <button class="direction-btn btn-right" data-cmd="r">右转</button>
+                <button class="direction-btn btn-down" data-cmd="b">后退</button>
             </div>
-            <div>
-                <button class="direction-btn" data-cmd="b">后退</button>
-            </div>
+        </div>
+
+        <div class="keyboard-hint">
+            键盘控制: W/A/S/D 或方向键控制方向，空格键停止
         </div>
 
         <div class="status-panel">
             <h3>传感器数据</h3>
-            <div class="status-item">状态: <span id="light">waiting...</span></div>
+            <div class="status-item">
+                <span>状态:</span>
+                <span id="light">waiting...</span>
+            </div>
         </div>
     </div>
 
@@ -204,43 +363,78 @@
 
         // 方向按钮控制
         document.querySelectorAll('.direction-btn, .stop-btn').forEach(button => {
-            button.addEventListener('click', function() {
+            // 触摸设备上的触摸事件
+            button.addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                this.classList.add('active');
                 const command = this.getAttribute('data-cmd');
                 sendCarCommand(command);
+            });
+            
+            button.addEventListener('touchend', function(e) {
+                e.preventDefault();
+                this.classList.remove('active');
+            });
+            
+            // 鼠标设备上的点击事件
+            button.addEventListener('mousedown', function() {
+                this.classList.add('active');
+                const command = this.getAttribute('data-cmd');
+                sendCarCommand(command);
+            });
+            
+            button.addEventListener('mouseup', function() {
+                this.classList.remove('active');
+            });
+            
+            button.addEventListener('mouseleave', function() {
+                this.classList.remove('active');
             });
         });
 
         // 键盘控制
+        const keyMap = {
+            'ArrowUp': 'e',
+            'w': 'e',
+            'W': 'e',
+            'ArrowDown': 'b',
+            's': 'b',
+            'S': 'b',
+            'ArrowLeft': 'l',
+            'a': 'l',
+            'A': 'l',
+            'ArrowRight': 'r',
+            'd': 'r',
+            'D': 'r',
+            ' ': 'c'
+        };
+        
+        const activeKeys = {};
+        
         document.addEventListener('keydown', function(e) {
-            let command = '';
-            switch(e.key) {
-                case 'ArrowUp':
-                case 'w':
-                case 'W':
-                    command = 'e'; // 前进
-                    break;
-                case 'ArrowDown':
-                case 's':
-                case 'S':
-                    command = 'b'; // 后退
-                    break;
-                case 'ArrowLeft':
-                case 'a':
-                case 'A':
-                    command = 'l'; // 左转
-                    break;
-                case 'ArrowRight':
-                case 'd':
-                case 'D':
-                    command = 'r'; // 右转
-                    break;
-                case ' ':
-                    command = 'c'; // 停止
-                    break;
-            }
-            if (command) {
+            const command = keyMap[e.key];
+            if (command && !activeKeys[e.key]) {
+                activeKeys[e.key] = true;
                 sendCarCommand(command);
+                
+                // 高亮对应的按钮
+                const button = document.querySelector(`[data-cmd="${command}"]`);
+                if (button) button.classList.add('active');
+                
                 e.preventDefault(); // 防止页面滚动
+            }
+        });
+        
+        document.addEventListener('keyup', function(e) {
+            const command = keyMap[e.key];
+            if (command) {
+                activeKeys[e.key] = false;
+                
+                // 移除按钮高亮
+                const button = document.querySelector(`[data-cmd="${command}"]`);
+                if (button) button.classList.remove('active');
+                
+                e.preventDefault();
             }
         });
 
