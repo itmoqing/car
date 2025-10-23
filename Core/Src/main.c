@@ -42,13 +42,16 @@
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
 #define DEVICE_ID "itmoqing1"  // 定义设备 ID
-#define SPEED 5000
+#define SPEED 7200
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
 volatile char cmd;  // 用于存放移动端发送过来的控制命令
+volatile uint8_t system_ready = 0;  // 系统就绪标志
+uint32_t last_toggle_time = 0;      // 上次LED切换时间
+uint8_t led_initialized = 0;        // LED状态初始化标志
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -115,19 +118,22 @@ int main(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
+  // 初始化为熄灭状态
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
+
   // 电机初始化
   MOTOR_Init();
   
-  
-	
   // 用中断的方式接收一个字节的数据
   HAL_UART_Receive_IT(&huart1, (uint8_t*)&cmd, sizeof(cmd));
   
   HAL_Delay(1000);
   
+  printf("System initializing...\r\n");
 
   float temp = 22;
   char s[100];
+  uint32_t current_time = 0;
     
   /* USER CODE END 2 */
 
@@ -136,14 +142,35 @@ int main(void)
   while (1)
   {     		
     sprintf(s, DEVICE_ID"/sensor/light %.1f\n", temp);      
-	HAL_UART_Transmit(&huart1, (uint8_t*)s, strlen(s), 1000); 
-			
-  	HAL_Delay(1200);  
-    // LED心跳指示
-    HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
+    HAL_StatusTypeDef tx_status = HAL_UART_Transmit(&huart1, (uint8_t*)s, strlen(s), 1000); 
     
+    // 检查数据发送是否成功
+    if(!system_ready && tx_status == HAL_OK)
+    {
+        system_ready = 1;
+        // 数据上传成功，LED常亮
+        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
+        printf("Data upload successful. System ready. Waiting for commands...\r\n");
+    }
     
-    HAL_Delay(1000);
+    // 如果数据上传未成功，LED闪烁
+    if(!system_ready)
+    {
+        current_time = HAL_GetTick();
+        if(current_time - last_toggle_time > 500)  // 500ms闪烁一次
+        {
+            HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
+            last_toggle_time = current_time;
+            printf("Data upload failed, retrying...\r\n");
+        }
+    }
+    else
+    {
+        // 系统就绪后，确保LED保持常亮状态
+        // 这里不需要做任何操作，因为已经在成功时设置为常亮了
+    }
+    
+    HAL_Delay(1200);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -195,41 +222,48 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 	if(huart == &huart1)
 	{
-        
-		if(cmd == 'e')
-		{
-			Car_Forward(SPEED);
-			
-		}
-		else if(cmd == 'b')
-		{
-			Car_Backward(SPEED);
-			
-		}
-		else if(cmd == 'l')
-		{
-			Car_TurnLeft(SPEED);
-			
-		}
-		else if(cmd == 'r')
-		{
-			Car_TurnRight(SPEED);
-			
-		}
-		else if(cmd == 'c')
-		{
-			Car_Stop();
-			
-		}
-		else
-		{
-			printf("Unknown command: 0x%02X\r\n", cmd);
-		}
+        // 只有在系统就绪后才处理命令
+        if(system_ready)
+        {
+            if(cmd == 'e')
+            {
+                Car_Forward(SPEED);
+                printf("Moving forward\r\n");
+            }
+            else if(cmd == 'b')
+            {
+                Car_Backward(SPEED);
+                printf("Moving backward\r\n");
+            }
+            else if(cmd == 'l')
+            {
+                Car_TurnLeft(SPEED);
+                printf("Turning left\r\n");
+            }
+            else if(cmd == 'r')
+            {
+                Car_TurnRight(SPEED);
+                printf("Turning right\r\n");
+            }
+            else if(cmd == 'c')
+            {
+                Car_Stop();
+                printf("Stopping\r\n");
+            }
+            else
+            {
+                printf("Unknown command: 0x%02X\r\n", cmd);
+            }
+        }
+        else
+        {
+            // 系统未就绪时，忽略接收到的数据
+            printf("System initializing, ignoring data: 0x%02X\r\n", cmd);
+        }
 		
 		HAL_UART_Receive_IT(&huart1, (uint8_t*)&cmd, sizeof(cmd));
 	}
 }
- 
 /* USER CODE END 4 */
 
 /**
@@ -250,7 +284,7 @@ void Error_Handler(void)
 #ifdef  USE_FULL_ASSERT
 /**
   * @brief  Reports the name of the source file and the source line number
-  *         where the assert_param error has occurred.
+  * where the assert_param error has occurred.
   * @param  file: pointer to the source file name
   * @param  line: assert_param error line source number
   * @retval None

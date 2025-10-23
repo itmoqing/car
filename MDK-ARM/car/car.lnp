@@ -1,7 +1,6 @@
 --cpu Cortex-M3
 "car\startup_stm32f103xb.o"
 "car\motor.o"
-"car\esp8266.o"
 "car\main.o"
 "car\gpio.o"
 "car\tim.o"
